@@ -24,7 +24,6 @@ http.createServer((Request,Response)=>{
     // console.log(Request.url);
     // console.log('请求来了');
     //根据请求的url 生成静态资源服务中的绝对路劲
-
     // 中文目录无法读取,需要解码,使用querystring模板
     let filePath = path.join(rootPath,querystring.unescape(Request.url));
     console.log(filePath);
@@ -56,15 +55,20 @@ http.createServer((Request,Response)=>{
           }
           //否则是文件夹 
           else{
-            // console.log(files);
+            console.log(files);
             // 直接判断是否存在首页
             if(files.indexOf("index.html")!=-1){
                 console.log("有首页");
                 // 读取首页即可
                 fs.readFile(path.join(filePath,'index.html'),(err,data)=>{
+                    console.log(filePath);
                     if(err){
                         console.log(err);
                     }else{
+                        // 判断文件类型是什么 设置不同的mime类型返回给浏览器
+                        Response.writeHead(200,{
+                            "content-type":mime.getType(filePath)
+                        });
                         Response.end(data);
                     }
                 });
@@ -74,9 +78,9 @@ http.createServer((Request,Response)=>{
                // 没有首页 
                let backData = "";
                for(let i = 0; i < files.length; i++){
-                //    根目录 request.url => /
+                // 根目录 request.url => /
                 // 默认拼接的都是 ./ 只能访问根目录
-                //根据请求的url 进行判断 拼接上一级目录的地址 进行即可进行访问
+                //根据请求的url 进行判断 拼接上一级目录的地址 点击即可进行访问
                    backData += `<h2><a href="${Request.url == "/" ? "" : Request.url}/${files[i]}">${files[i]}</a></h2>`;
                }
                Response.writeHead(200,{
